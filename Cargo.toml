@@ -1,0 +1,11 @@
+[package]
+name = "asroute"
+version = "0.1.0"
+authors = ["Steven Pack <steven.pack.code@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+cymrust = "0.3.4"
+crossterm = "0.17.7"
