@@ -1,21 +1,27 @@
 extern crate cymrust;
-extern crate crossterm;
 
 use std::io::{self, BufRead};
+use std::process;
 use cymrust::{AsNumber};
 
 fn main() {
-  //TODO: debug (show traceroute and failed lines)
-  //TODO: pass through the ***
   //TODO: -t show traceroute output
   //TODO: -v show debug lines and -t
-  //TODO: handle failures
   //TODO: show progress indicator
- 
+  //TODO: brew install https://federicoterzi.com/blog/how-to-publish-your-rust-project-on-homebrew/
+  //TODO: README
+  
   let stdin = io::stdin();
-  let mut last_asn = String::new();
+  let mut last_asn_str = String::new();
   for line in stdin.lock().lines() {
-    let line = line.expect("Could not read line from standard in");
+    
+    let line = match line {
+      Ok(line) => line.to_uppercase(),
+      Err(e) => {
+        eprintln!("Failed to read line. {}", e);
+        process::exit(1);
+      } 
+    };
 
     //For unknown * * * lines, continue.
     if line.contains("*") {
@@ -23,39 +29,50 @@ fn main() {
       continue;
     }
 
-    //Look for [ASXXX]. Error if it's not there
-    let start_byte = line.find("[").unwrap_or(0);
-    let end_byte = line.find("]").unwrap_or(0);
+    //Don't look up AS0
+    if line.contains("[AS0]") {
+      println!("-> AS0");
+      continue;
+    } 
 
-    if (start_byte == 0) || (end_byte == 0) {
-      //if debug
-      println!("Couldn't find [ASN] in line. Check you passed the -a argument to traceroute. Expected usage traceroute -a example.com | asroute");
+    //Look for [ASXXX]. Error if it's not there
+    let start_byte  = line.find("[").unwrap_or(usize::MAX);
+    let end_byte = line.find("]").unwrap_or(usize::MAX);
+
+    if (start_byte == usize::MAX) || (end_byte == usize::MAX) {
+      eprintln!("Couldn't find [ASN] in line. Check you passed the -a argument to traceroute. Expected usage traceroute -a example.com | asroute");
       continue;
     }
 
     //Take the inside of the [ASXXXX]
-    let asn = &line[start_byte + 1..end_byte];
-
+    let asn_str = &line[start_byte + 1..end_byte];
+    
     //Only show each new ASN
-    if asn != last_asn {
-      last_asn = asn.to_string();
-      let num = asn.replace("AS", "");
-      let lookup_asn: AsNumber = num.parse::<u32>().unwrap();
+    if asn_str != last_asn_str {
+      last_asn_str = asn_str.to_string();
+      let num_str = asn_str.replace("AS", "");
+      let asn: AsNumber = match num_str.parse::<u32>() {
+        Ok(val) => val,
+        Err(e) => {
+          eprintln!("Failed to parse ASN. {}", e);
+          continue;
+        }
+      };
       
-      //Don't look up AS0
-      if lookup_asn == 0 {
-        println!("-> AS0");
-        continue;
-      }
-
       //Lookup via WHOIS
-      let cymru = cymrust::cymru_asn(lookup_asn);
-      if cymru.is_ok() {
-        //println!("{:#?}", cymru.unwrap());
-        let vec = cymru.unwrap();
-        let data = &vec[0];
-        println!("-> {}", data.as_name);
-      }  
+      let asn_info = match cymrust::cymru_asn(asn){
+        Ok(val) => val,
+        Err(e) => {
+          eprintln!("Failed to lookup ASN {}, {}", asn, e);
+          continue;
+        }
+      };
+      let mut as_name = "?";
+      if asn_info.len() > 0 {
+        let data = &asn_info[0];
+        as_name = &data.as_name;
+      }
+      println!("-> {}", as_name);
     }    
   }
 
