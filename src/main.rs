@@ -5,16 +5,18 @@ use std::process;
 use cymrust::{AsNumber};
 
 fn main() {
+  //TODO: -h with usage
   //TODO: -t show traceroute output
   //TODO: -v show debug lines and -t
   //TODO: show progress indicator
   //TODO: brew install https://federicoterzi.com/blog/how-to-publish-your-rust-project-on-homebrew/
   //TODO: README
-  
-  let stdin = io::stdin();
+
   let mut last_asn_str = String::new();
-  for line in stdin.lock().lines() {
-    
+
+  let stdin = io::stdin();
+  for line in stdin.lock().lines() {    
+    //Read a line
     let line = match line {
       Ok(line) => line.to_uppercase(),
       Err(e) => {
@@ -36,18 +38,18 @@ fn main() {
     } 
 
     //Look for [ASXXX]. Error if it's not there
-    let start_byte  = line.find("[").unwrap_or(usize::MAX);
-    let end_byte = line.find("]").unwrap_or(usize::MAX);
+    let start_index  = line.find("[").unwrap_or(usize::MAX);
+    let end_index = line.find("]").unwrap_or(usize::MAX);
 
-    if (start_byte == usize::MAX) || (end_byte == usize::MAX) {
+    if (start_index == usize::MAX) || (end_index == usize::MAX) {
       eprintln!("Couldn't find [ASN] in line. Check you passed the -a argument to traceroute. Expected usage traceroute -a example.com | asroute");
       continue;
     }
 
     //Take the inside of the [ASXXXX]
-    let asn_str = &line[start_byte + 1..end_byte];
+    let asn_str = &line[start_index + 1..end_index];
     
-    //Only show each new ASN
+    //Only show ASN when it changes
     if asn_str != last_asn_str {
       last_asn_str = asn_str.to_string();
       let num_str = asn_str.replace("AS", "");
@@ -75,5 +77,4 @@ fn main() {
       println!("-> {}", as_name);
     }    
   }
-
 }
