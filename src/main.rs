@@ -5,15 +5,9 @@ use std::process;
 use cymrust::{AsNumber};
 
 fn main() {
-  //TODO: -h with usage
-  //TODO: -t show traceroute output
-  //TODO: -v show debug lines and -t
-  //TODO: show progress indicator
-  //TODO: brew install https://federicoterzi.com/blog/how-to-publish-your-rust-project-on-homebrew/
-  //TODO: README
-
   let mut last_asn_str = String::new();
 
+  //Read each line from stdin
   let stdin = io::stdin();
   for line in stdin.lock().lines() {        
     let line = read_line(line);   
