@@ -8,11 +8,12 @@ Uses Team Cymru's [Rust crate](https://docs.rs/cymrust/0.3.4/cymrust/) for the A
 
 ## Installation
 
-- TODO: brew
 - TODO: cargo
 
+### Homebrew
 ```bash
-brew install...
+$ brew tap stevenpack/tap
+$ brew install asroute
 ```
 
 ## Usage

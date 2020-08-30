@@ -57,7 +57,7 @@ fn check_no_response(line: &String) -> Option<String> {
 }
 
 fn check_reserved(line: &String) -> Option<String> {
-  if line.contains("[AS0]") {    
+  if line.contains("[AS0]") || line.contains("[AS?]") {    
     return Some("-> AS0 (Reserved)".to_string());
   } 
   None  

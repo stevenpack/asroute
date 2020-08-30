@@ -1,6 +1,6 @@
 [package]
 name = "asroute"
-description = "Interpret traceroute output to show names of ASN traversed"
+description = "CLI to interpret traceroute -a output to show names of Autonomous Systems traversed"
 version = "0.1.0"
 authors = ["Steven Pack <steven.pack.code@gmail.com>"]
 edition = "2018"
