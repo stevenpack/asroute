@@ -2,14 +2,14 @@
 
 `asroute` is a CLI tool for parsing traceroute output to summarize AS's traversed.
 
-Ever wondered how your packets get from home to Bhutan? I sometimes like to see it, not at the hop level, but the companies and their networks that carry my data.
+Ever wondered how your packets get from home to Bhutan? I sometimes like to see it, not at the hop level, but the companies and their networks that carry my data. Or how much shorter the paths are if the site uses a CDN?
 
-Or how much shorter the paths are if the site uses a CDN?
+Uses Team Cymru's [Rust crate](https://docs.rs/cymrust/0.3.4/cymrust/) for the ASN to AS Name lookup 
 
 ## Installation
 
-TODO: brew
-TODO: cargo
+- TODO: brew
+- TODO: cargo
 
 ```bash
 brew install...
