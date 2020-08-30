@@ -8,13 +8,15 @@ Uses Team Cymru's [Rust crate](https://docs.rs/cymrust/0.3.4/cymrust/) for the A
 
 ## Installation
 
-- TODO: cargo
-
 ### Homebrew
 ```bash
 $ brew tap stevenpack/tap
 $ brew install asroute
 ```
+
+### Cargo
+
+TODO
 
 ## Usage
 
@@ -43,7 +45,7 @@ Please make sure to update tests as appropriate.
 - [ ] -h with usage
 - [ ] progress indicator
 - [ ] mode to execute traceroute rather than parsing output
-- [ ] brew install
+- [x] brew install
 
 ## License
 [MIT](https://choosealicense.com/licenses/mit/)
