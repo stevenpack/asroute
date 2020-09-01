@@ -66,22 +66,21 @@ fn check_reserved(line: &str) -> Option<&str> {
 fn parse_asn(asn_str: &str) -> Result<String, Error> {
   //Convert to anumber
   let num_str = asn_str.replace("AS", "");
-  let asn: AsNumber = match num_str.parse::<u32>() {
-    Ok(val) => val,
-    Err(e) => return Err(Error::new(ErrorKind::Other, format!("Failed to parse ASN. {}", e)))
-  };
-  
+  let asn: AsNumber = num_str
+    .parse::<u32>()
+    .map_err(|e| Error::new(ErrorKind::Other, format!("Failed to parse ASN. {}", e)))?;
+    
   //Lookup via WHOIS
-  let asn_info = match cymrust::cymru_asn(asn){
+  let asn_info = match cymrust::cymru_asn(asn) {
     Ok(val) => val,
     Err(e) => return Err(Error::new(ErrorKind::Other, format!("Failed to lookup ASN {}, {}", asn, e)))
   };
-  let mut as_name = "?";
-  if asn_info.len() > 0 {
-    let data = &asn_info[0];
-    as_name = &data.as_name;
-  }
-  Ok(as_name.to_string())  
+  let as_name = if asn_info.len() > 0 {
+    &asn_info[0].as_name
+  } else {
+    "?"
+  };
+  Ok(as_name.to_string())
 }
 
 fn get_asn_str(line: &str) -> Option<String> {
