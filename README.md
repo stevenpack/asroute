@@ -14,10 +14,6 @@ $ brew tap stevenpack/tap
 $ brew install asroute
 ```
 
-### Cargo
-
-TODO
-
 ## Usage
 
 ```bash
@@ -46,6 +42,10 @@ Please make sure to update tests as appropriate.
 - [ ] progress indicator
 - [ ] mode to execute traceroute rather than parsing output
 - [x] brew install
+
+## Notes
+
+The [lft](https://en.wikipedia.org/wiki/Layer_four_traceroute) tool contains similar functionality and is a feature-rich layer 4 tracing tool (although requires sudo). If you're doing serious network analysis, that is probably more for you. This tool was more to scratch an itch for doing a Rust CLI and seeing how easy (very!) it is to distribute via homebrew.
 
 ## License
 [MIT](https://choosealicense.com/licenses/mit/)
