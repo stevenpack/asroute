@@ -10,7 +10,6 @@ Uses Team Cymru's [Rust crate](https://docs.rs/cymrust/0.3.4/cymrust/) for the A
 
 ### Homebrew
 ```bash
-$ brew tap stevenpack/tap
 $ brew install asroute
 ```
 
@@ -20,15 +19,16 @@ $ brew install asroute
 $ traceroute -a www.bhutan.gov.bt | asroute
 traceroute to bhutan.gov.bt (202.144.128.217), 64 hops max, 52 byte packets
 -> AS0 (Reserved)
--> COMCAST-7922, US
--> CMCS, US
--> COMCAST-7922, US
 -> *
+-> BRESNAN-33588, US
+-> LIGHTOWER, US
+-> BRESNAN-33588, US
+-> CHARTER-20115, US
+-> TELIANET Telia Carrier, EU
 -> *
 -> NTT-COMMUNICATIONS-2914, US
 -> DRUKNET-AS DrukNet ISP, BT
 -> BTTELECOM-AS-AP Bhutan Telecom Ltd, BT
--> *
 ```
 
 ## Contributing
