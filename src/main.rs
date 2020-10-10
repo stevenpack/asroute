@@ -1,10 +1,24 @@
 extern crate cymrust;
+extern crate clap;
 
 use std::io::{self, Error, ErrorKind, BufRead};
 use std::process;
 use cymrust::{AsNumber};
+use clap::Clap;
+
+/// asroute parses traceroute or lft outut to show summary of AS's traversed
+#[derive(Clap)]
+#[clap(version = "0.1", author = "Steven Pack <steven.pack.code@gmail.com>")]
+struct Opts {
+    // /// Some input. Because this isn't an Option<T> it's required to be used
+    // input: String,
+    /// A level of verbosity, and can be used multiple times
+    #[clap(short, long)]
+    verbose: bool,
+}
 
 fn main() {
+  let opts: Opts = Opts::parse();
   let mut last_asn_str = String::new();
 
   //Read each line from stdin
@@ -21,7 +35,9 @@ fn main() {
     let asn_str = match get_asn_str(&line) {
       Some(val) => val,
       None => {
-        eprintln!("Couldn't find [ASN] in line. Check you passed the -a argument to traceroute. Expected usage 'traceroute -a example.com | asroute'");
+        if opts.verbose {
+          eprintln!("Couldn't find [ASN] in line. Check you passed the -a argument to traceroute. Expected usage 'traceroute -a example.com | asroute'");
+        }
         continue;
       }
     };
@@ -34,7 +50,11 @@ fn main() {
     last_asn_str = asn_str;    
     match parse_asn(&last_asn_str) {
       Ok(as_name) => println!("-> {}", as_name),
-      Err(e) => eprintln!("{}", e)
+      Err(e) => {
+        if opts.verbose {
+          eprintln!("{}", e)
+        }        
+      }
     };      
   }
 }
