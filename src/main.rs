@@ -1,62 +1,115 @@
 extern crate cymrust;
 extern crate clap;
 
-use std::io::{self, Error, ErrorKind, BufRead};
 use std::process;
 use cymrust::{AsNumber};
 use clap::Clap;
+use std::process::{Command, Stdio};
+use std::io::{BufRead, BufReader, Error, ErrorKind};
 
 /// asroute parses traceroute or lft outut to show summary of AS's traversed
 #[derive(Clap)]
+#[derive(Debug)]
 #[clap(version = "0.1", author = "Steven Pack <steven.pack.code@gmail.com>")]
 struct Opts {
-    // /// Some input. Because this isn't an Option<T> it's required to be used
-    // input: String,
     /// A level of verbosity, and can be used multiple times
     #[clap(short, long)]
     verbose: bool,
+    /// Execution mode. Executes traceroute instead of accepting piped input
+    #[clap(short = 'x', long)]
+    execute: bool,
+    #[clap(required(false), default_value("example.com"))]
+    host: String
+    
+}
+
+enum LineResult {
+  Message(String),
+  Error(String),
+  Continue
 }
 
 fn main() {
   let opts: Opts = Opts::parse();
   let mut last_asn_str = String::new();
 
-  //Read each line from stdin
-  let stdin = io::stdin();
-  for line in stdin.lock().lines() {        
-    let line = read_line(line);   
+  //println!("{:#?}", opts);
+  if opts.execute {
+    //println!("Launching traceroute -a {:?}", opts.host);
+    let stdout = Command::new("traceroute")
+                  .arg("-a")
+                  .arg(opts.host)
+                  .stdout(Stdio::piped())
+                  .spawn()
+                  .expect("Couldn't spawn child process")
+                  .stdout
+                  .expect("Couldn't capture stdout");
+        //.ok_or_else(|| Error::new(ErrorKind::Other,"Could not capture standard output."))?;
 
-    //For unknown * * * lines, or AS0 continue.
-    if let Some(msg) = check_no_response(&line).or_else(|| check_reserved(&line)) {
-      println!("{}", msg);
+    let reader = BufReader::new(stdout);
+
+    reader
+        .lines()
+        .filter_map(|line| line.ok())
+        //.filter(|line| line.find("usb").is_some())
+        .for_each(|line| println!("Ya! {}", line));
+
+    return;
+  }
+
+  //Read each line from stdin (pipe mode)
+  let stdin = std::io::stdin();
+  for line in stdin.lock().lines() {    
+    //TODO: method that takes an interator of Result<String, Error>
+    match interpret_line(line) {
+      LineResult::Message(msg) => println!("{}", msg),
+      LineResult::Error(msg) => {
+        if opts.verbose {
+          eprintln!("{}", msg);
+        }
+      },
+      LineResult::Continue => continue
+    } 
+  }
+
+  //-i interactive mode
+}
+
+
+
+fn interpret_line(line: Result<String, Error>) -> LineResult {
+  let line = read_line(line);   
+
+  //For unknown * * * lines, or AS0 continue.
+  if let Some(msg) = check_no_response(&line).or_else(|| check_reserved(&line)) {
+    println!("{}", msg);
+    continue;
+  }
+
+  let asn_str = match get_asn_str(&line) {
+    Some(val) => val,
+    None => {
+      if opts.verbose {
+        eprintln!("Couldn't find [ASN] in line. Check you passed the -a argument to traceroute. Expected usage 'traceroute -a example.com | asroute'");
+      }
       continue;
     }
+  };
+ 
+  //Only lookup and show ASN when it changes
+  if asn_str == last_asn_str {
+    continue;
+  } 
 
-    let asn_str = match get_asn_str(&line) {
-      Some(val) => val,
-      None => {
-        if opts.verbose {
-          eprintln!("Couldn't find [ASN] in line. Check you passed the -a argument to traceroute. Expected usage 'traceroute -a example.com | asroute'");
-        }
-        continue;
-      }
-    };
-   
-    //Only lookup and show ASN when it changes
-    if asn_str == last_asn_str {
-      continue;
-    } 
-
-    last_asn_str = asn_str;    
-    match parse_asn(&last_asn_str) {
-      Ok(as_name) => println!("-> {}", as_name),
-      Err(e) => {
-        if opts.verbose {
-          eprintln!("{}", e)
-        }        
-      }
-    };      
-  }
+  last_asn_str = asn_str;    
+  match parse_asn(&last_asn_str) {
+    Ok(as_name) => println!("-> {}", as_name),
+    Err(e) => {
+      if opts.verbose {
+        eprintln!("{}", e)
+      }        
+    }
+  };      
 }
 
 fn read_line(line: Result<String, Error>) -> String {
